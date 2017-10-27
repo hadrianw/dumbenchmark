@@ -28,8 +28,13 @@ int main(int argc, char *argv[])
 		goto out_close_db;
 	}
 	
-	rc = 0;
+	if(sqlite3_exec(db, "INSERT INTO kernel VALUES(path, content)", callback, 0, &err) != SQLITE_OK) {
+		fprintf(stderr, "sqlite3_exec failed: %s\n", err);
+		sqlite3_free(err);
+		goto out_close_db;
+	}
 	
+	rc = 0;	
 out_close_db:
 	sqlite3_close(db);
 	return rc;
