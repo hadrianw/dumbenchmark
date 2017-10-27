@@ -79,7 +79,9 @@ int main(int argc, char *argv[])
 	rc = nftw(argv[2], step, 16, 0);
 	if(rc) {
 		fprintf(stderr, "ntfw failed: %s\n", strerror(errno));
-	}	
+	}
+
+	sqlite3_finalize(insert_stmt);
 out_close_db:
 	sqlite3_close(db);
 	return rc;
