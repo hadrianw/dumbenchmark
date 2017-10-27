@@ -11,7 +11,8 @@
 
 static sqlite3_stmt *insert_stmt;
 
-static int step(const char *path, const struct stat *sb, int flag, struct FTW *ftwbuf)
+static int
+step(const char *path, const struct stat *sb, int flag, struct FTW *ftwbuf)
 {
 	int fd;
 	char *fbuf;
@@ -54,7 +55,8 @@ static int step(const char *path, const struct stat *sb, int flag, struct FTW *f
 	}
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
 	int rc = -1;
 	sqlite3 *db;
