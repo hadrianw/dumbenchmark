@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <sqlite3.h>
 
-#define INSERT_QUERY "INSERT INTO kernel VALUES (?, ?)", 
+#define INSERT_QUERY "INSERT INTO index VALUES (?, ?)", 
 
 int step(const char *path, const struct stat *sb, int flag, struct FTW *ftwbuf)
 {
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 		goto out_close_db;
 	}
 	
-	if(sqlite3_exec(db, "CREATE VIRTUAL TABLE kernel USING fts5(path, content)", NULL, NULL, &err) != SQLITE_OK) {
+	if(sqlite3_exec(db, "CREATE VIRTUAL TABLE index USING fts5(path, content)", NULL, NULL, &err) != SQLITE_OK) {
 		fprintf(stderr, "sqlite3_exec failed: %s\n", err);
 		sqlite3_free(err);
 		goto out_close_db;
