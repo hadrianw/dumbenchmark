@@ -1,6 +1,11 @@
+#include <errno.h>
 #include <ftw.h>
 #include <stdio.h>
+#include <string.h>
 #include <sqlite3.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #define INSERT_QUERY "INSERT INTO index VALUES (?, ?)", 
 
