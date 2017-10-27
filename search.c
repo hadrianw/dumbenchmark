@@ -3,17 +3,6 @@
 
 #define MATCH_QUERY "SELECT snippet(index, -1, '[_[', ']_]', '====', 32) FROM index WHERE index MATCH ?", 
 
-static int
-callback(void *NotUsed, int argc, char **argv, char **azColName)
-{
-	int i;
-	for(i = 0; i < argc; i++){
-		printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-	}
-	puts("");
-	return 0;
-}
-
 int
 main(int argc, char *argv[])
 {
@@ -38,7 +27,8 @@ main(int argc, char *argv[])
 	}
 
 	while((rc = sqlite3_step(insert_stmt) == SQLITE_ROW)) {
-		// show results
+		// TODO: always show full path
+		printf("%s\n", sqlite3_column_text(insert_stmt, 0));
 	}
 	if(rc != 0) {
 		fprintf(stderr, "sqlite3_step failed: %s\n", sqlite3_errmsg(db));
