@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <sqlite3.h>
 
-#define MATCH_QUERY "SELECT * FROM index WHERE index MATCH ?", 
+#define MATCH_QUERY "SELECT snippet(index, -1, '[_[', ']_]', '====', 32) FROM index WHERE index MATCH ?", 
 
 static int
 callback(void *NotUsed, int argc, char **argv, char **azColName)
