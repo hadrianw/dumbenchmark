@@ -4,10 +4,25 @@
 
 #define INSERT_QUERY "INSERT INTO index VALUES (?, ?)", 
 
-int step(const char *path, const struct stat *sb, int flag, struct FTW *ftwbuf)
+static sqlite3 *db;
+static sqlite3_stmt *insert_stmt;
+
+static int step(const char *path, const struct stat *sb, int flag, struct FTW *ftwbuf)
 {
-	// sqlite3_bind_text
-	// sqlite3_bind_text
+	int fd;
+	char *fbuf;
+
+	if(flag != FTW_F) {
+		return 0;
+	}
+
+	sqlite3_bind_text(insert_stmt, 1, path, strlen(path), SQLITE_TRANSIENT);
+
+	fd = open(path, O_RDONLY);
+	fbuf = mmap(NULL, sb->st_size, PROT_READ, MAP_SHARED, fd, 0);
+	sqlite3_bind_text(insert_stmt, 2, fbuf, sb->st_size, SQLITE_TRANSIENT);
+	munmap(fbuf, sb->st_size);
+
 	// sqlite3_step
 	// sqlite3_reset
 }
@@ -15,11 +30,7 @@ int step(const char *path, const struct stat *sb, int flag, struct FTW *ftwbuf)
 int main(int argc, char *argv[])
 {
 	int rc = -1;
-	sqlite3 *db;
-	sqlite3_stmt *insert_stmt;
 	char *err = 0;
-	DIR *dp;
-	struct dirent *ep;
 	
 	if(sqlite3_open(argv[1], &db)) {
 		fprintf(stderr, "sqlite3_open failed: %s\n", sqlite3_errmsg(db));
