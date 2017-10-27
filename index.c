@@ -4,32 +4,55 @@
 
 #define INSERT_QUERY "INSERT INTO index VALUES (?, ?)", 
 
-static sqlite3 *db;
 static sqlite3_stmt *insert_stmt;
 
 static int step(const char *path, const struct stat *sb, int flag, struct FTW *ftwbuf)
 {
 	int fd;
 	char *fbuf;
+	int rc;
 
 	if(flag != FTW_F) {
 		return 0;
 	}
 
-	sqlite3_bind_text(insert_stmt, 1, path, strlen(path), SQLITE_TRANSIENT);
+	if(sqlite3_reset(insert_stmt) != SQLITE_OK) {
+		fprintf(stderr, "sqlite3_reset failed: %s\n", sqlite3_errmsg(db));
+		return -1;
+	}
+
+	if(sqlite3_bind_text(insert_stmt, 1, path, strlen(path), SQLITE_TRANSIENT) != SQLITE_OK) {
+		fprintf(stderr, "sqlite3_bind_text path failed: %s\n", sqlite3_errmsg(db));
+		return -1;
+	}
 
 	fd = open(path, O_RDONLY);
+	if(fd < 0) {
+		fprintf(stderr, "open %s failed: %s\n", path, strerror(errno));
+		return -1;
+	}
 	fbuf = mmap(NULL, sb->st_size, PROT_READ, MAP_SHARED, fd, 0);
-	sqlite3_bind_text(insert_stmt, 2, fbuf, sb->st_size, SQLITE_TRANSIENT);
+	if(fbuf == NULL) {
+		fprintf(stderr, "mmap %s failed: %s\n", path, strerror(errno));
+		return -1;
+	}
+	rc = sqlite3_bind_text(insert_stmt, 2, fbuf, sb->st_size, SQLITE_TRANSIENT);
 	munmap(fbuf, sb->st_size);
+	if(rc != SQLITE_OK) {
+		fprintf(stderr, "sqlite3_bind_text body failed: %s\n", sqlite3_errmsg(db));
+		return -1;
+	}
 
-	// sqlite3_step
-	// sqlite3_reset
+	if(sqlite3_step(insert_stmt) != SQLITE_DONE) {
+		fprintf(stderr, "sqlite3_step failed: %s\n", sqlite3_errmsg(db));
+		return -1;
+	}
 }
 
 int main(int argc, char *argv[])
 {
 	int rc = -1;
+	sqlite3 *db;
 	char *err = 0;
 	
 	if(sqlite3_open(argv[1], &db)) {
@@ -48,9 +71,10 @@ int main(int argc, char *argv[])
 		goto out_close_db;
 	}
 	
-	nftw(argv[2], step, 16, 0);
-
-	rc = 0;	
+	rc = nftw(argv[2], step, 16, 0);
+	if(rc) {
+		fprintf(stderr, "ntfw failed: %s\n", strerror(errno));
+	}	
 out_close_db:
 	sqlite3_close(db);
 	return rc;
