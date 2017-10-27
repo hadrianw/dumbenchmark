@@ -22,9 +22,9 @@ int main(int argc, char *argv[])
 		goto out_close_db;
 	}
 	
-	if(sqlite3_exec(db, argv[2], callback, 0, &err) != SQLITE_OK) {
+	if(sqlite3_exec(db, "CREATE VIRTUAL TABLE kernel USING fts5(path, content)", callback, 0, &err) != SQLITE_OK) {
 		fprintf(stderr, "sqlite3_exec failed: %s\n", err);
-		sqlite3_free(zErrMsg);
+		sqlite3_free(err);
 		goto out_close_db;
 	}
 	
