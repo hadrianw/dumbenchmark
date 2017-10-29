@@ -47,6 +47,7 @@ step(const char *path, const struct stat *sb, int flag, struct FTW *ftwbuf)
 	}
 	rc = sqlite3_bind_text(insert_stmt, 2, fbuf, sb->st_size, SQLITE_TRANSIENT);
 	munmap(fbuf, sb->st_size);
+	close(fd);
 	if(rc != SQLITE_OK) {
 		fprintf(stderr, "sqlite3_bind_text body failed: %s\n", sqlite3_errmsg(db));
 		return -1;
