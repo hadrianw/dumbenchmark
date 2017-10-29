@@ -1,14 +1,15 @@
+#define _XOPEN_SOURCE 700
 #include <stdio.h>
+#include <string.h>
 #include <sqlite3.h>
 
-#define MATCH_QUERY "SELECT snippet(index, -1, '[_[', ']_]', '====', 32) FROM index WHERE index MATCH ?", 
+#define MATCH_QUERY "SELECT snippet(library, -1, '[_[', ']_]', '\n', 32) FROM library WHERE library MATCH ?"
 
 int
 main(int argc, char *argv[])
 {
 	int rc = -1;
 	sqlite3 *db;
-	char *err = 0;
 	sqlite3_stmt *match_stmt;
 	
 	if(sqlite3_open(argv[1], &db)) {
@@ -26,9 +27,9 @@ main(int argc, char *argv[])
 		goto out_finalize_stmt;
 	}
 
-	while((rc = sqlite3_step(insert_stmt) == SQLITE_ROW)) {
+	while((rc = sqlite3_step(match_stmt) == SQLITE_ROW)) {
 		// TODO: always show full path
-		printf("%s\n", sqlite3_column_text(insert_stmt, 0));
+		printf("%s\n", sqlite3_column_text(match_stmt, 0));
 	}
 	if(rc != 0) {
 		fprintf(stderr, "sqlite3_step failed: %s\n", sqlite3_errmsg(db));

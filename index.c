@@ -1,4 +1,6 @@
+#define _XOPEN_SOURCE 700
 #include <errno.h>
+#include <fcntl.h>
 #include <ftw.h>
 #include <stdio.h>
 #include <string.h>
@@ -7,8 +9,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#define INSERT_QUERY "INSERT INTO index VALUES (?, ?)", 
+#define INSERT_QUERY "INSERT INTO library VALUES (?, ?)"
 
+static sqlite3 *db;
 static sqlite3_stmt *insert_stmt;
 
 static int
@@ -53,21 +56,21 @@ step(const char *path, const struct stat *sb, int flag, struct FTW *ftwbuf)
 		fprintf(stderr, "sqlite3_step failed: %s\n", sqlite3_errmsg(db));
 		return -1;
 	}
+	return 0;
 }
 
 int
 main(int argc, char *argv[])
 {
 	int rc = -1;
-	sqlite3 *db;
 	char *err = 0;
 	
-	if(sqlite3_open(argv[1], &db)) {
+	if(sqlite3_open(argv[1], &db) != SQLITE_OK) {
 		fprintf(stderr, "sqlite3_open failed: %s\n", sqlite3_errmsg(db));
 		goto out_close_db;
 	}
 	
-	if(sqlite3_exec(db, "CREATE VIRTUAL TABLE index USING fts5(path, content)", NULL, NULL, &err) != SQLITE_OK) {
+	if(sqlite3_exec(db, "CREATE VIRTUAL TABLE library USING fts5(path, content)", NULL, NULL, &err) != SQLITE_OK) {
 		fprintf(stderr, "sqlite3_exec failed: %s\n", err);
 		sqlite3_free(err);
 		goto out_close_db;

@@ -10,12 +10,12 @@ make defconfig
 time make -j"$JOBS"
 )
 
-time wget "https://www.sqlite.org/2017/sqlite-amalgamation-3210000.zip"
-time unzip sqlite-*.zip
+wget "https://www.sqlite.org/2017/sqlite-amalgamation-3210000.zip"
+unzip sqlite-*.zip
 
-time gcc -O2 index.c sqlite/sqlite3.c -Isqlite -DSQLITE_ENABLE_FTS5 -o index
+time gcc -O2 -Wall -Wextra index.c sqlite-*/sqlite3.c -I sqlite-*/ -DSQLITE_ENABLE_FTS5 -DSQLITE_OMIT_LOAD_EXTENSION -lpthread -lm -o index
 time ./index database.sqlite linux
 
-time gcc -O2 search.c sqlite/sqlite3.c -Isqlite -DSQLITE_ENABLE_FTS5 -o search
+time gcc -O2 -Wall -Wextra search.c sqlite-*/sqlite3.c -I sqlite-*/ -DSQLITE_ENABLE_FTS5 -DSQLITE_OMIT_LOAD_EXTENSION -lpthread -lm -o search
 time ./search database.sqlite frobnicate
 time ./search database.sqlite static
