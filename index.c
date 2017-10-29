@@ -8,20 +8,44 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
+
+#define LEN(x) (sizeof(x)/sizeof((x)[0]))
 
 #define INSERT_QUERY "INSERT INTO library VALUES (?, ?)"
 
 static sqlite3 *db;
 static sqlite3_stmt *insert_stmt;
 
+static char *suffixes[] = {
+	".h",
+	".c",
+	".S",
+	".sh",
+	".txt"
+};
+
 static int
 step(const char *path, const struct stat *sb, int flag, struct FTW *ftwbuf)
 {
+	size_t plen;
+	size_t i;
 	int fd;
 	char *fbuf;
 	int rc;
 
 	if(flag != FTW_F) {
+		return 0;
+	}
+
+	plen  = strlen(path);
+	for(i = 0; i < LEN(suffixes); i++) {
+		size_t slen = strlen(suffixes[i]);
+		if(plen > slen && !memcmp(path + plen - slen, suffixes[i], slen)) {
+			break;
+		}
+	}
+	if(i == LEN(suffixes)) {
 		return 0;
 	}
 
